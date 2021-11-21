@@ -151,22 +151,47 @@ public class NetworkedServer : MonoBehaviour
                 //Create the game session object, pass it to two players
                 GameSession gs = new GameSession(playerWaitingForMatch, id);
                 gameSessions.AddLast(gs);
+                
+                //Decide turn order
+                int ran = UnityEngine.Random.Range(0, 2);
+
                 //Pass a signifier to both clients that they've joined one
-                SendMessageToClient(ServerToClientSiginifiers.GameSessionStarted + "", id);
-                SendMessageToClient(ServerToClientSiginifiers.GameSessionStarted + "", playerWaitingForMatch);
-               
+                SendMessageToClient(ServerToClientSiginifiers.GameSessionStarted + "," + gs.playerID1 + "," + ran, gs.playerID1);
+                SendMessageToClient(ServerToClientSiginifiers.GameSessionStarted + "," + gs.playerID2 + "," + ran, gs.playerID2);
+
                 playerWaitingForMatch = -1;
             }
         }
-        else if (signifier == ClientToServerSignifiers.TicTacToePlay)
+        else if (signifier == ClientToServerSignifiers.playerAction)
         {
-            Debug.Log("Our next action item beckons");
-
             GameSession gs = FindGameSessionWithPlayerID(id);
-            if (gs.playerID1 == id)
-                SendMessageToClient(ServerToClientSiginifiers.OpponentTicTacToePlay + "", gs.playerID2);
-            else
-                SendMessageToClient(ServerToClientSiginifiers.OpponentTicTacToePlay + "", gs.playerID1);
+            if (gs != null)
+            {
+                if (gs.playerID1 == id)
+                {
+                    SendMessageToClient(ServerToClientSiginifiers.OpponentTicTacToePlay + "," + csv[1] + csv[2], gs.playerID2);
+                }
+                else
+                {
+                    SendMessageToClient(ServerToClientSiginifiers.OpponentTicTacToePlay + "," + csv[1] + csv[2], gs.playerID1);
+                }
+            }
+        }
+        else if (signifier == ClientToServerSignifiers.sendMessage)
+        {
+            GameSession gs = FindGameSessionWithPlayerID(id);
+
+            if (gs != null)
+            {
+                if (gs.playerID1 == id)
+                {
+                    SendMessageToClient(ServerToClientSiginifiers.DisplayReceivedMsg + "," + csv[1], gs.playerID2);
+                }
+                else
+                {
+                    SendMessageToClient(ServerToClientSiginifiers.DisplayReceivedMsg + "," + csv[1], gs.playerID1);
+                }
+            }
         }
     }
 
@@ -240,6 +265,10 @@ public class NetworkedServer : MonoBehaviour
         public const int CreateAccount = 2;
         public const int AddToGameSessionQueue = 3;
         public const int TicTacToePlay = 4;
+        public const int playerAction = 5;
+        public const int playerWin = 6;
+        public const int isDraw = 7;
+        public const int sendMessage = 8;
     }
 
     public static class ServerToClientSiginifiers
@@ -247,6 +276,8 @@ public class NetworkedServer : MonoBehaviour
         public const int LoginResponse = 1;
         public const int GameSessionStarted = 2;
         public const int OpponentTicTacToePlay = 3;
+        public const int DisplayReceivedMsg = 4;
+        public const int DecideTurnOrder = 5;
     }
 
     public static class LoginResponses

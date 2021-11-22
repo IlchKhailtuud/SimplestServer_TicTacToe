@@ -87,7 +87,7 @@ public class NetworkedServer : MonoBehaviour
 
             bool isUnique = true;
             
-            foreach (var pa in playerAccounts)
+            foreach (PlayerAccount pa in playerAccounts)
             {
                 if (pa.name == n)
                 {
@@ -115,7 +115,7 @@ public class NetworkedServer : MonoBehaviour
 
             bool hasBeenFound = false;
 
-            foreach (var pa in playerAccounts)
+            foreach (PlayerAccount pa in playerAccounts)
             {
                 if (pa.name == n)
                 {
@@ -152,13 +152,20 @@ public class NetworkedServer : MonoBehaviour
                 GameSession gs = new GameSession(playerWaitingForMatch, id);
                 gameSessions.AddLast(gs);
                 
-                //Decide turn order
-                int ran = UnityEngine.Random.Range(0, 2);
-
+                //Decide turn order & chess mark
+                int ran = UnityEngine.Random.Range(1, 3);
+                if (ran == 1)
+                {
+                    SendMessageToClient(ServerToClientSiginifiers.GameSessionStarted + "," + gs.playerID1 + "," + 1 + "," + 1, gs.playerID1); 
+                    SendMessageToClient(ServerToClientSiginifiers.GameSessionStarted + "," + gs.playerID2 + "," + 2 + "," + 0, gs.playerID2); 
+                }
+                else
+                {
+                    SendMessageToClient(ServerToClientSiginifiers.GameSessionStarted + "," + gs.playerID2 + "," + 1 + "," + 1, gs.playerID2);
+                    SendMessageToClient(ServerToClientSiginifiers.GameSessionStarted + "," + gs.playerID1 + "," + 2 + "," + 0, gs.playerID1);
+                }
+                
                 //Pass a signifier to both clients that they've joined one
-                SendMessageToClient(ServerToClientSiginifiers.GameSessionStarted + "," + gs.playerID1 + "," + ran, gs.playerID1);
-                SendMessageToClient(ServerToClientSiginifiers.GameSessionStarted + "," + gs.playerID2 + "," + ran, gs.playerID2);
-
                 playerWaitingForMatch = -1;
             }
         }
@@ -169,11 +176,12 @@ public class NetworkedServer : MonoBehaviour
             {
                 if (gs.playerID1 == id)
                 {
-                    SendMessageToClient(ServerToClientSiginifiers.OpponentTicTacToePlay + "," + csv[1] + csv[2], gs.playerID2);
+                    SendMessageToClient(ServerToClientSiginifiers.OpponentTicTacToePlay + "," + csv[1], gs.playerID2);
                 }
                 else
-                {
-                    SendMessageToClient(ServerToClientSiginifiers.OpponentTicTacToePlay + "," + csv[1] + csv[2], gs.playerID1);
+                {   Debug.Log("Player ID: " + id + "Index: " + csv[1]);
+                    SendMessageToClient(ServerToClientSiginifiers.OpponentTicTacToePlay + "," + csv[1], gs.playerID1);
+                    
                 }
             }
         }
@@ -193,6 +201,18 @@ public class NetworkedServer : MonoBehaviour
                 }
             }
         }
+        else if (signifier == ClientToServerSignifiers.watchGame) //get a random game session to join
+        {
+            if (gameSessions.Count <= 0)
+            {
+                // No session available
+            }
+            else
+            {
+                int randomIndex = gameSessions.Count;
+                //gs.spectatorList.Add(id);
+            }
+        }
     }
 
     private void SavePlayerAccounts()
@@ -200,7 +220,7 @@ public class NetworkedServer : MonoBehaviour
         StreamWriter sw =
             new StreamWriter(playerAccountFilePath);
         
-        foreach (var pa in playerAccounts)
+        foreach (PlayerAccount pa in playerAccounts)
         {
             sw.WriteLine(pa.name + "," + pa.password);
         }
@@ -228,7 +248,7 @@ public class NetworkedServer : MonoBehaviour
 
     private GameSession FindGameSessionWithPlayerID(int id)
     {
-        foreach (var gs in gameSessions)
+        foreach (GameSession gs in gameSessions)
         {
             if (gs.playerID1 == id || gs.playerID2 == id)
                 return gs;
@@ -251,11 +271,32 @@ public class NetworkedServer : MonoBehaviour
     public class GameSession
     {
         public int playerID1, playerID2; //add getter & setter later
-
+        public List<PlayerChess> chessList;
+        public List<int> spectatorList;
+        
         public GameSession(int playerID1, int playerID2)
         {
             this.playerID1 = playerID1;
             this.playerID2 = playerID2;
+            chessList = new List<PlayerChess>();
+            spectatorList = new List<int>();
+        }
+
+        public void AddPlayerChess(int mark, int pos)
+        {
+            chessList.Add(new PlayerChess(mark, pos));
+        }
+    }
+
+    public class PlayerChess
+    {
+        private int chessMark;
+        private int chessPos;
+
+        public PlayerChess(int chessMark, int chessPos)
+        {
+            this.chessMark = chessMark;
+            this.chessPos = chessPos;
         }
     }
 
@@ -269,6 +310,7 @@ public class NetworkedServer : MonoBehaviour
         public const int playerWin = 6;
         public const int isDraw = 7;
         public const int sendMessage = 8;
+        public const int watchGame = 9;
     }
 
     public static class ServerToClientSiginifiers
@@ -278,6 +320,7 @@ public class NetworkedServer : MonoBehaviour
         public const int OpponentTicTacToePlay = 3;
         public const int DisplayReceivedMsg = 4;
         public const int DecideTurnOrder = 5;
+        public const int spectatorJoin = 6;
     }
 
     public static class LoginResponses

@@ -209,8 +209,28 @@ public class NetworkedServer : MonoBehaviour
             }
             else
             {
-                int randomIndex = gameSessions.Count;
-                //gs.spectatorList.Add(id);
+                List<int> templist = new List<int>();
+
+                foreach (GameSession gs in gameSessions)
+                {
+                    templist.Add(gs.playerID1);
+                    templist.Add(gs.playerID2);
+                }
+                
+                int randomIndex = UnityEngine.Random.Range(0,  gameSessions.Count);
+                GameSession tempgs = FindGameSessionWithPlayerID(templist[randomIndex]);
+                tempgs.spectatorList.Add(id);
+                
+                SendMessageToClient(ServerToClientSiginifiers.spectatorJoin + "," + 0, id); 
+
+                if (tempgs.chessList.Count > 0)
+                {
+                    foreach (PlayerChess pc in tempgs.chessList)
+                    {
+                        SendMessageToClient(ServerToClientSiginifiers.spectatorJoin + "," + 1 + "," + pc.chessPos + "," + pc.chessMark, id);
+                    }
+                    SendMessageToClient(ServerToClientSiginifiers.spectatorJoin + "," + 2, id);
+                }
             }
         }
     }
@@ -290,8 +310,8 @@ public class NetworkedServer : MonoBehaviour
 
     public class PlayerChess
     {
-        private int chessMark;
-        private int chessPos;
+        public int chessMark;
+        public int chessPos;
 
         public PlayerChess(int chessMark, int chessPos)
         {

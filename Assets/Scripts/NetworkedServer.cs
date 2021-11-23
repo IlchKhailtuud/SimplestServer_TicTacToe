@@ -176,12 +176,21 @@ public class NetworkedServer : MonoBehaviour
             {
                 if (gs.playerID1 == id)
                 {
-                    SendMessageToClient(ServerToClientSiginifiers.OpponentTicTacToePlay + "," + csv[1], gs.playerID2);
+                    SendMessageToClient(ServerToClientSiginifiers.OpponentTicTacToePlay + "," + csv[1] + "," + csv[2], gs.playerID2);
+                    gs.chessList.Add(new PlayerChess(int.Parse(csv[1]), int.Parse(csv[2])));
                 }
                 else
-                {   Debug.Log("Player ID: " + id + "Index: " + csv[1]);
-                    SendMessageToClient(ServerToClientSiginifiers.OpponentTicTacToePlay + "," + csv[1], gs.playerID1);
-                    
+                {  
+                    SendMessageToClient(ServerToClientSiginifiers.OpponentTicTacToePlay + "," + csv[1] + "," + csv[2], gs.playerID1);
+                    gs.chessList.Add(new PlayerChess(int.Parse(csv[1]), int.Parse(csv[2])));
+                }
+
+                if (gs.spectatorList.Count > 0)
+                {
+                    foreach (int spectator in gs.spectatorList)
+                    {
+                        SendMessageToClient(ServerToClientSiginifiers.updateSpectator + "," + csv[1] + csv[2], spectator);
+                    }
                 }
             }
         }
@@ -227,7 +236,7 @@ public class NetworkedServer : MonoBehaviour
                 {
                     foreach (PlayerChess pc in tempgs.chessList)
                     {
-                        SendMessageToClient(ServerToClientSiginifiers.spectatorJoin + "," + 1 + "," + pc.chessPos + "," + pc.chessMark, id);
+                        SendMessageToClient(ServerToClientSiginifiers.updateSpectator + "," + pc.chessPos + "," + pc.chessMark, id);
                     }
                     SendMessageToClient(ServerToClientSiginifiers.spectatorJoin + "," + 2, id);
                 }
@@ -290,7 +299,7 @@ public class NetworkedServer : MonoBehaviour
 
     public class GameSession
     {
-        public int playerID1, playerID2; //add getter & setter later
+        public int playerID1, playerID2; 
         public List<PlayerChess> chessList;
         public List<int> spectatorList;
         
@@ -313,7 +322,7 @@ public class NetworkedServer : MonoBehaviour
         public int chessMark;
         public int chessPos;
 
-        public PlayerChess(int chessMark, int chessPos)
+        public PlayerChess(int chessPos, int chessMark)
         {
             this.chessMark = chessMark;
             this.chessPos = chessPos;
@@ -341,6 +350,7 @@ public class NetworkedServer : MonoBehaviour
         public const int DisplayReceivedMsg = 4;
         public const int DecideTurnOrder = 5;
         public const int spectatorJoin = 6;
+        public const int updateSpectator = 7;
     }
 
     public static class LoginResponses

@@ -176,12 +176,12 @@ public class NetworkedServer : MonoBehaviour
             {
                 if (gs.playerID1 == id)
                 {
-                    SendMessageToClient(ServerToClientSiginifiers.OpponentTicTacToePlay + "," + csv[1] + "," + csv[2], gs.playerID2);
+                    SendMessageToClient(ServerToClientSiginifiers.OpponentTicTacToePlay + "," + csv[1] + "," + csv[2] + "," + gs.playerID1, gs.playerID2);
                     gs.chessList.Add(new PlayerChess(int.Parse(csv[1]), int.Parse(csv[2])));
                 }
                 else
                 {  
-                    SendMessageToClient(ServerToClientSiginifiers.OpponentTicTacToePlay + "," + csv[1] + "," + csv[2], gs.playerID1);
+                    SendMessageToClient(ServerToClientSiginifiers.OpponentTicTacToePlay + "," + csv[1] + "," + csv[2] + "," + gs.playerID2, gs.playerID1);
                     gs.chessList.Add(new PlayerChess(int.Parse(csv[1]), int.Parse(csv[2])));
                 }
 
@@ -250,13 +250,29 @@ public class NetworkedServer : MonoBehaviour
             
             SendMessageToClient(ServerToClientSiginifiers.announceWinner + "," + csv[1], gs.playerID1);
             SendMessageToClient(ServerToClientSiginifiers.announceWinner + "," + csv[1], gs.playerID2);
+            
+            if (gs.spectatorList.Count > 0)
+            { 
+                foreach (int spectator in gs.spectatorList)
+                {
+                    SendMessageToClient(ServerToClientSiginifiers.announceWinner + "," + csv[1], spectator);
+                }
+            }
         }
         else if (signifier == ClientToServerSignifiers.isDraw)
         {
             GameSession gs = FindGameSessionWithPlayerID(id);
             
-            SendMessageToClient(ServerToClientSiginifiers.announceDraw + "," + csv[1], gs.playerID1);
-            SendMessageToClient(ServerToClientSiginifiers.announceDraw + "," + csv[1], gs.playerID2);
+            SendMessageToClient(ServerToClientSiginifiers.announceDraw + "", gs.playerID1);
+            SendMessageToClient(ServerToClientSiginifiers.announceDraw + "", gs.playerID2);
+            
+            if (gs.spectatorList.Count > 0)
+            { 
+                foreach (int spectator in gs.spectatorList)
+                {
+                    SendMessageToClient(ServerToClientSiginifiers.announceDraw + "", spectator);
+                }
+            }
         }
     }
 

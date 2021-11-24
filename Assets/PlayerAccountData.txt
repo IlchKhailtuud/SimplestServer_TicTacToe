@@ -83,3 +83,9 @@ zvzv,zvzv
 bbc,bbc
 cccb,cccb
 mmo,mmo
+halo,halo
+bat,bat
+halo2,halo2
+halo7,halo7
+zi,zi
+jaja,jaja

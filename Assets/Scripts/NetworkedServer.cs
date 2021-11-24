@@ -214,7 +214,6 @@ public class NetworkedServer : MonoBehaviour
         {
             if (gameSessions.Count <= 0)
             {
-                // No session available
                 Debug.Log("No session available");
             }
             else
@@ -273,6 +272,20 @@ public class NetworkedServer : MonoBehaviour
                     SendMessageToClient(ServerToClientSiginifiers.announceDraw + "", spectator);
                 }
             }
+        }
+        else if (signifier == ClientToServerSignifiers.requestReplay)
+        {
+            GameSession gs = FindGameSessionWithPlayerID(id);
+            
+            SendMessageToClient(ServerToClientSiginifiers.sendReplayChessList + "," + 1, id);
+
+            foreach (PlayerChess pc in gs.chessList)
+            {
+                Debug.Log("Sending replay player chess");
+                SendMessageToClient(ServerToClientSiginifiers.sendReplayChessList + "," + 1 + "," + pc.chessPos + "," + pc.chessMark, id);
+            }
+            
+            SendMessageToClient(ServerToClientSiginifiers.spectatorJoin + "," + 2, id);
         }
     }
 
@@ -372,6 +385,7 @@ public class NetworkedServer : MonoBehaviour
         public const int isDraw = 7;
         public const int sendMessage = 8;
         public const int watchGame = 9;
+        public const int requestReplay = 10;
     }
 
     public static class ServerToClientSiginifiers
@@ -385,6 +399,7 @@ public class NetworkedServer : MonoBehaviour
         public const int updateSpectator = 7;
         public const int announceWinner = 8;
         public const int announceDraw = 9;
+        public const int sendReplayChessList = 10;
     }
 
     public static class LoginResponses

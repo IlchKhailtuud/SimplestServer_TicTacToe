@@ -186,10 +186,10 @@ public class NetworkedServer : MonoBehaviour
                 }
 
                 if (gs.spectatorList.Count > 0)
-                {
+                { 
                     foreach (int spectator in gs.spectatorList)
                     {
-                        SendMessageToClient(ServerToClientSiginifiers.updateSpectator + "," + csv[1] + csv[2], spectator);
+                        SendMessageToClient(ServerToClientSiginifiers.updateSpectator + "," + csv[1] + "," + csv[2], spectator);
                     }
                 }
             }
@@ -215,6 +215,7 @@ public class NetworkedServer : MonoBehaviour
             if (gameSessions.Count <= 0)
             {
                 // No session available
+                Debug.Log("No session available");
             }
             else
             {
@@ -226,17 +227,18 @@ public class NetworkedServer : MonoBehaviour
                     templist.Add(gs.playerID2);
                 }
                 
-                int randomIndex = UnityEngine.Random.Range(0,  gameSessions.Count);
+                int randomIndex = UnityEngine.Random.Range(0,  gameSessions.Count + 1);
                 GameSession tempgs = FindGameSessionWithPlayerID(templist[randomIndex]);
                 tempgs.spectatorList.Add(id);
                 
                 SendMessageToClient(ServerToClientSiginifiers.spectatorJoin + "," + 0, id); 
 
-                if (tempgs.chessList.Count > 0)
+                if (tempgs.chessList.Count > 0) 
                 {
                     foreach (PlayerChess pc in tempgs.chessList)
                     {
-                        SendMessageToClient(ServerToClientSiginifiers.updateSpectator + "," + pc.chessPos + "," + pc.chessMark, id);
+                        Debug.Log("Sending player chess");
+                        SendMessageToClient(ServerToClientSiginifiers.spectatorJoin + "," + 1 + ","+ pc.chessPos + "," + pc.chessMark, id);
                     }
                     SendMessageToClient(ServerToClientSiginifiers.spectatorJoin + "," + 2, id);
                 }

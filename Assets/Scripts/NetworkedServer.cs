@@ -244,6 +244,20 @@ public class NetworkedServer : MonoBehaviour
                 }
             }
         }
+        else if (signifier == ClientToServerSignifiers.playerWin)
+        {
+            GameSession gs = FindGameSessionWithPlayerID(id);
+            
+            SendMessageToClient(ServerToClientSiginifiers.announceWinner + "," + csv[1], gs.playerID1);
+            SendMessageToClient(ServerToClientSiginifiers.announceWinner + "," + csv[1], gs.playerID2);
+        }
+        else if (signifier == ClientToServerSignifiers.isDraw)
+        {
+            GameSession gs = FindGameSessionWithPlayerID(id);
+            
+            SendMessageToClient(ServerToClientSiginifiers.announceDraw + "," + csv[1], gs.playerID1);
+            SendMessageToClient(ServerToClientSiginifiers.announceDraw + "," + csv[1], gs.playerID2);
+        }
     }
 
     private void SavePlayerAccounts()
@@ -353,6 +367,8 @@ public class NetworkedServer : MonoBehaviour
         public const int DecideTurnOrder = 5;
         public const int spectatorJoin = 6;
         public const int updateSpectator = 7;
+        public const int announceWinner = 8;
+        public const int announceDraw = 9;
     }
 
     public static class LoginResponses

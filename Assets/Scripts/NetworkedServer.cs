@@ -236,7 +236,6 @@ public class NetworkedServer : MonoBehaviour
                 {
                     foreach (PlayerChess pc in tempgs.chessList)
                     {
-                        Debug.Log("Sending player chess");
                         SendMessageToClient(ServerToClientSiginifiers.spectatorJoin + "," + 1 + ","+ pc.chessPos + "," + pc.chessMark, id);
                     }
                     SendMessageToClient(ServerToClientSiginifiers.spectatorJoin + "," + 2, id);
@@ -277,15 +276,14 @@ public class NetworkedServer : MonoBehaviour
         {
             GameSession gs = FindGameSessionWithPlayerID(id);
             
-            SendMessageToClient(ServerToClientSiginifiers.sendReplayChessList + "," + 1, id);
+            SendMessageToClient(ServerToClientSiginifiers.sendReplayChessList + "," + 0, id);
 
             foreach (PlayerChess pc in gs.chessList)
             {
-                Debug.Log("Sending replay player chess");
                 SendMessageToClient(ServerToClientSiginifiers.sendReplayChessList + "," + 1 + "," + pc.chessPos + "," + pc.chessMark, id);
             }
             
-            SendMessageToClient(ServerToClientSiginifiers.spectatorJoin + "," + 2, id);
+            SendMessageToClient(ServerToClientSiginifiers.sendReplayChessList + "," + 2, id);
         }
     }
 

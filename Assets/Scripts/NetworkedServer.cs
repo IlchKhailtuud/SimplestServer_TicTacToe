@@ -74,7 +74,7 @@ public class NetworkedServer : MonoBehaviour
     
     private void ProcessRecievedMsg(string msg, int id)
     {
-        Debug.Log("msg recieved = " + msg + ".  connection id = " + id);
+        Debug.Log("msg received = " + msg + ".  connection id = " + id);
 
         string[] csv = msg.Split(',');
 
@@ -172,6 +172,8 @@ public class NetworkedServer : MonoBehaviour
         else if (signifier == ClientToServerSignifiers.playerAction)
         {
             GameSession gs = FindGameSessionWithPlayerID(id);
+            
+            //send player chess info to other client
             if (gs != null)
             {
                 if (gs.playerID1 == id)
@@ -181,12 +183,14 @@ public class NetworkedServer : MonoBehaviour
                 }
                 else
                 {  
+                    
                     SendMessageToClient(ServerToClientSiginifiers.OpponentTicTacToePlay + "," + csv[1] + "," + csv[2] + "," + gs.playerID2, gs.playerID1);
                     gs.chessList.Add(new PlayerChess(int.Parse(csv[1]), int.Parse(csv[2])));
                 }
 
+                //if there is more than one observer, then send notify to every observer
                 if (gs.spectatorList.Count > 0)
-                { 
+                {
                     foreach (int spectator in gs.spectatorList)
                     {
                         SendMessageToClient(ServerToClientSiginifiers.updateSpectator + "," + csv[1] + "," + csv[2], spectator);
@@ -210,7 +214,8 @@ public class NetworkedServer : MonoBehaviour
                 }
             }
         }
-        else if (signifier == ClientToServerSignifiers.watchGame) //get a random game session to join
+        //get a random game session to join
+        else if (signifier == ClientToServerSignifiers.watchGame) 
         {
             if (gameSessions.Count <= 0)
             {
@@ -226,18 +231,22 @@ public class NetworkedServer : MonoBehaviour
                     templist.Add(gs.playerID2);
                 }
                 
+                //find a random available game session to join
                 int randomIndex = UnityEngine.Random.Range(0,  gameSessions.Count + 1);
-                GameSession tempgs = FindGameSessionWithPlayerID(templist[randomIndex]);
-                tempgs.spectatorList.Add(id);
+                GameSession tempGS = FindGameSessionWithPlayerID(templist[randomIndex]);
+                tempGS.spectatorList.Add(id);
                 
                 SendMessageToClient(ServerToClientSiginifiers.spectatorJoin + "," + 0, id); 
 
-                if (tempgs.chessList.Count > 0) 
+                //if either player has placed chess, then go through the chess list and send chess info to client
+                if (tempGS.chessList.Count > 0) 
                 {
-                    foreach (PlayerChess pc in tempgs.chessList)
+                    foreach (PlayerChess pc in tempGS.chessList)
                     {
                         SendMessageToClient(ServerToClientSiginifiers.spectatorJoin + "," + 1 + ","+ pc.chessPos + "," + pc.chessMark, id);
                     }
+                    
+                    //notify client that all player moves have been sent 
                     SendMessageToClient(ServerToClientSiginifiers.spectatorJoin + "," + 2, id);
                 }
             }
@@ -246,9 +255,11 @@ public class NetworkedServer : MonoBehaviour
         {
             GameSession gs = FindGameSessionWithPlayerID(id);
             
+            //notify both players win condition
             SendMessageToClient(ServerToClientSiginifiers.announceWinner + "," + csv[1], gs.playerID1);
             SendMessageToClient(ServerToClientSiginifiers.announceWinner + "," + csv[1], gs.playerID2);
             
+            //if there is more than one observer, then go through the observer to announce game result
             if (gs.spectatorList.Count > 0)
             { 
                 foreach (int spectator in gs.spectatorList)
@@ -261,9 +272,11 @@ public class NetworkedServer : MonoBehaviour
         {
             GameSession gs = FindGameSessionWithPlayerID(id);
             
+            //notify both players draw condition
             SendMessageToClient(ServerToClientSiginifiers.announceDraw + "", gs.playerID1);
             SendMessageToClient(ServerToClientSiginifiers.announceDraw + "", gs.playerID2);
             
+            //if there is more than one observer, then go through the observer to announce game result
             if (gs.spectatorList.Count > 0)
             { 
                 foreach (int spectator in gs.spectatorList)
@@ -276,13 +289,16 @@ public class NetworkedServer : MonoBehaviour
         {
             GameSession gs = FindGameSessionWithPlayerID(id);
             
+            //notify the client to update chessboard visual
             SendMessageToClient(ServerToClientSiginifiers.sendReplayChessList + "," + 0, id);
 
+            //go through the chess list and send all chess info to client
             foreach (PlayerChess pc in gs.chessList)
             {
                 SendMessageToClient(ServerToClientSiginifiers.sendReplayChessList + "," + 1 + "," + pc.chessPos + "," + pc.chessMark, id);
             }
             
+            //notify client that all player moves have been sent 
             SendMessageToClient(ServerToClientSiginifiers.sendReplayChessList + "," + 2, id);
         }
     }
@@ -340,6 +356,7 @@ public class NetworkedServer : MonoBehaviour
         }
     }
 
+    //class for holing both player moves & observers
     public class GameSession
     {
         public int playerID1, playerID2; 
@@ -360,6 +377,7 @@ public class NetworkedServer : MonoBehaviour
         }
     }
 
+    //class for containing chess info 
     public class PlayerChess
     {
         public int chessMark;

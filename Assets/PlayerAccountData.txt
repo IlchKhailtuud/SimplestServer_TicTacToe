@@ -113,3 +113,9 @@ create,create
 mobu,mobu
 qiqida,qiqida
 selang,selang
+xxoox,xxoox
+xxxxo,xxxxo
+yyiillii,yyiillii
+kkllk,kkllk
+hohohaha,hohohaha
+gugugaga,gugugaga

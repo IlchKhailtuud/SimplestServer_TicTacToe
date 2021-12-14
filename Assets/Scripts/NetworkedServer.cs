@@ -57,7 +57,7 @@ public class NetworkedServer : MonoBehaviour
                 break;
             case NetworkEventType.DataEvent:
                 string msg = Encoding.Unicode.GetString(recBuffer, 0, dataSize);
-                ProcessRecievedMsg(msg, recConnectionID);
+                ProcessReceivedMsg(msg, recConnectionID);
                 break;
             case NetworkEventType.DisconnectEvent:
                 Debug.Log("Disconnection, " + recConnectionID);
@@ -72,7 +72,7 @@ public class NetworkedServer : MonoBehaviour
         NetworkTransport.Send(hostID, id, reliableChannelID, buffer, msg.Length * sizeof(char), out error);
     }
     
-    private void ProcessRecievedMsg(string msg, int id)
+    private void ProcessReceivedMsg(string msg, int id)
     {
         Debug.Log("msg received = " + msg + ".  connection id = " + id);
 
@@ -264,7 +264,7 @@ public class NetworkedServer : MonoBehaviour
             { 
                 foreach (int spectator in gs.spectatorList)
                 {
-                    SendMessageToClient(ServerToClientSiginifiers.announceWinner + "," + csv[1], spectator);
+                    SendMessageToClient(ServerToClientSiginifiers.announceWinnerForSpectator + "," + csv[1], spectator);
                 }
             }
         }
@@ -281,7 +281,7 @@ public class NetworkedServer : MonoBehaviour
             { 
                 foreach (int spectator in gs.spectatorList)
                 {
-                    SendMessageToClient(ServerToClientSiginifiers.announceDraw + "", spectator);
+                    SendMessageToClient(ServerToClientSiginifiers.announceDrawForSpectator + "", spectator);
                 }
             }
         }
@@ -300,6 +300,13 @@ public class NetworkedServer : MonoBehaviour
             
             //notify client that all player moves have been sent 
             SendMessageToClient(ServerToClientSiginifiers.sendReplayChessList + "," + 2, id);
+        }
+        else if (signifier == ClientToServerSignifiers.startNewSession)
+        {
+            //remove previous game session 
+            gameSessions.Remove(FindGameSessionWithPlayerID(id));
+            //rest queue
+            playerWaitingForMatch = -1;
         }
     }
 
@@ -402,6 +409,7 @@ public class NetworkedServer : MonoBehaviour
         public const int sendMessage = 8;
         public const int watchGame = 9;
         public const int requestReplay = 10;
+        public const int startNewSession = 11;
     }
 
     public static class ServerToClientSiginifiers
@@ -416,6 +424,8 @@ public class NetworkedServer : MonoBehaviour
         public const int announceWinner = 8;
         public const int announceDraw = 9;
         public const int sendReplayChessList = 10;
+        public const int announceWinnerForSpectator = 11;
+        public const int announceDrawForSpectator = 12;
     }
 
     public static class LoginResponses

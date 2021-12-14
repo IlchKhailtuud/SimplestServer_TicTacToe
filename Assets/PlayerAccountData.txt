@@ -121,3 +121,7 @@ hohohaha,hohohaha
 gugugaga,gugugaga
 utada,utada
 hikaru,hikaru
+kill,kill
+bill,bill
+xxxxllll,xxxxllll
+silk,silk

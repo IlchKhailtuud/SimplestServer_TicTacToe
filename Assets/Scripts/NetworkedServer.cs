@@ -306,9 +306,6 @@ public class NetworkedServer : MonoBehaviour
             //remove previous game session 
             if (FindGameSessionWithPlayerID(id) != null)
                 gameSessions.Remove(FindGameSessionWithPlayerID(id));
-            //rest queue
-            if (playerWaitingForMatch != -1)
-                playerWaitingForMatch = -1;
         }
     }
 

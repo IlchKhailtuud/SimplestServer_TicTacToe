@@ -304,9 +304,11 @@ public class NetworkedServer : MonoBehaviour
         else if (signifier == ClientToServerSignifiers.startNewSession)
         {
             //remove previous game session 
-            gameSessions.Remove(FindGameSessionWithPlayerID(id));
+            if (FindGameSessionWithPlayerID(id) != null)
+                gameSessions.Remove(FindGameSessionWithPlayerID(id));
             //rest queue
-            playerWaitingForMatch = -1;
+            if (playerWaitingForMatch != -1)
+                playerWaitingForMatch = -1;
         }
     }
 

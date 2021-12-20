@@ -98,14 +98,14 @@ public class NetworkedServer : MonoBehaviour
             if (isUnique)
             {
                 playerAccounts.AddLast(new PlayerAccount(n, p));
-                SendMessageToClient(ServerToClientSiginifiers.LoginResponse + "," + LoginResponses.Success, id);
+                SendMessageToClient(ServerToClientSignifiers.LoginResponse + "," + LoginResponses.Success, id);
                 
                 //save player account list
                 SavePlayerAccounts();
             }
             else
             {
-                SendMessageToClient(ServerToClientSiginifiers.LoginResponse + "," + LoginResponses.FailureNameInUse, id);
+                SendMessageToClient(ServerToClientSignifiers.LoginResponse + "," + LoginResponses.FailureNameInUse, id);
             }
         }
         else if (signifier == ClientToServerSignifiers.Login)
@@ -121,11 +121,11 @@ public class NetworkedServer : MonoBehaviour
                 {
                     if (pa.password == p)
                     {
-                        SendMessageToClient(ServerToClientSiginifiers.LoginResponse + "," + LoginResponses.Success, id);
+                        SendMessageToClient(ServerToClientSignifiers.LoginResponse + "," + LoginResponses.Success, id);
                     }
                     else
                     {
-                        SendMessageToClient(ServerToClientSiginifiers.LoginResponse + "," + LoginResponses.FailureIncorrectPassword, id);
+                        SendMessageToClient(ServerToClientSignifiers.LoginResponse + "," + LoginResponses.FailureIncorrectPassword, id);
                     }
                     
                     hasBeenFound = true;
@@ -135,7 +135,7 @@ public class NetworkedServer : MonoBehaviour
             
             if (!hasBeenFound)
             {
-                SendMessageToClient(ServerToClientSiginifiers.LoginResponse + "," + LoginResponses.FailureNameNotFound, id);
+                SendMessageToClient(ServerToClientSignifiers.LoginResponse + "," + LoginResponses.FailureNameNotFound, id);
             }
         }
         else if (signifier == ClientToServerSignifiers.AddToGameSessionQueue)
@@ -156,13 +156,13 @@ public class NetworkedServer : MonoBehaviour
                 int ran = UnityEngine.Random.Range(1, 3);
                 if (ran == 1)
                 {
-                    SendMessageToClient(ServerToClientSiginifiers.GameSessionStarted + "," + gs.playerID1 + "," + 1 + "," + 1, gs.playerID1); 
-                    SendMessageToClient(ServerToClientSiginifiers.GameSessionStarted + "," + gs.playerID2 + "," + 2 + "," + 0, gs.playerID2); 
+                    SendMessageToClient(ServerToClientSignifiers.GameSessionStarted + "," + gs.playerID1 + "," + 1 + "," + 1, gs.playerID1); 
+                    SendMessageToClient(ServerToClientSignifiers.GameSessionStarted + "," + gs.playerID2 + "," + 2 + "," + 0, gs.playerID2); 
                 }
                 else
                 {
-                    SendMessageToClient(ServerToClientSiginifiers.GameSessionStarted + "," + gs.playerID2 + "," + 1 + "," + 1, gs.playerID2);
-                    SendMessageToClient(ServerToClientSiginifiers.GameSessionStarted + "," + gs.playerID1 + "," + 2 + "," + 0, gs.playerID1);
+                    SendMessageToClient(ServerToClientSignifiers.GameSessionStarted + "," + gs.playerID2 + "," + 1 + "," + 1, gs.playerID2);
+                    SendMessageToClient(ServerToClientSignifiers.GameSessionStarted + "," + gs.playerID1 + "," + 2 + "," + 0, gs.playerID1);
                 }
                 
                 //Pass a signifier to both clients that they've joined one
@@ -178,13 +178,13 @@ public class NetworkedServer : MonoBehaviour
             {
                 if (gs.playerID1 == id)
                 {
-                    SendMessageToClient(ServerToClientSiginifiers.OpponentTicTacToePlay + "," + csv[1] + "," + csv[2] + "," + gs.playerID1, gs.playerID2);
+                    SendMessageToClient(ServerToClientSignifiers.OpponentTicTacToePlay + "," + csv[1] + "," + csv[2] + "," + gs.playerID1, gs.playerID2);
                     gs.chessList.Add(new PlayerChess(int.Parse(csv[1]), int.Parse(csv[2])));
                 }
                 else
                 {  
                     
-                    SendMessageToClient(ServerToClientSiginifiers.OpponentTicTacToePlay + "," + csv[1] + "," + csv[2] + "," + gs.playerID2, gs.playerID1);
+                    SendMessageToClient(ServerToClientSignifiers.OpponentTicTacToePlay + "," + csv[1] + "," + csv[2] + "," + gs.playerID2, gs.playerID1);
                     gs.chessList.Add(new PlayerChess(int.Parse(csv[1]), int.Parse(csv[2])));
                 }
 
@@ -193,7 +193,7 @@ public class NetworkedServer : MonoBehaviour
                 {
                     foreach (int spectator in gs.spectatorList)
                     {
-                        SendMessageToClient(ServerToClientSiginifiers.updateSpectator + "," + csv[1] + "," + csv[2], spectator);
+                        SendMessageToClient(ServerToClientSignifiers.updateSpectator + "," + csv[1] + "," + csv[2], spectator);
                     }
                 }
             }
@@ -206,11 +206,11 @@ public class NetworkedServer : MonoBehaviour
             {
                 if (gs.playerID1 == id)
                 {
-                    SendMessageToClient(ServerToClientSiginifiers.DisplayReceivedMsg + "," + csv[1], gs.playerID2);
+                    SendMessageToClient(ServerToClientSignifiers.DisplayReceivedMsg + "," + csv[1], gs.playerID2);
                 }
                 else
                 {
-                    SendMessageToClient(ServerToClientSiginifiers.DisplayReceivedMsg + "," + csv[1], gs.playerID1);
+                    SendMessageToClient(ServerToClientSignifiers.DisplayReceivedMsg + "," + csv[1], gs.playerID1);
                 }
             }
         }
@@ -236,18 +236,18 @@ public class NetworkedServer : MonoBehaviour
                 GameSession tempGS = FindGameSessionWithPlayerID(templist[randomIndex]);
                 tempGS.spectatorList.Add(id);
                 
-                SendMessageToClient(ServerToClientSiginifiers.spectatorJoin + "," + 0, id); 
+                SendMessageToClient(ServerToClientSignifiers.spectatorJoin + "," + DataTransferSignifiers.transferStart, id); 
 
                 //if either player has placed chess, then go through the chess list and send chess info to client
                 if (tempGS.chessList.Count > 0) 
                 {
                     foreach (PlayerChess pc in tempGS.chessList)
                     {
-                        SendMessageToClient(ServerToClientSiginifiers.spectatorJoin + "," + 1 + ","+ pc.chessPos + "," + pc.chessMark, id);
+                        SendMessageToClient(ServerToClientSignifiers.spectatorJoin + "," + DataTransferSignifiers.transferInProgress + ","+ pc.chessPos + "," + pc.chessMark, id);
                     }
                     
                     //notify client that all player moves have been sent 
-                    SendMessageToClient(ServerToClientSiginifiers.spectatorJoin + "," + 2, id);
+                    SendMessageToClient(ServerToClientSignifiers.spectatorJoin + "," + DataTransferSignifiers.transferEnd, id);
                 }
             }
         }
@@ -256,15 +256,15 @@ public class NetworkedServer : MonoBehaviour
             GameSession gs = FindGameSessionWithPlayerID(id);
             
             //notify both players win condition
-            SendMessageToClient(ServerToClientSiginifiers.announceWinner + "," + csv[1], gs.playerID1);
-            SendMessageToClient(ServerToClientSiginifiers.announceWinner + "," + csv[1], gs.playerID2);
+            SendMessageToClient(ServerToClientSignifiers.announceWinner + "," + csv[1], gs.playerID1);
+            SendMessageToClient(ServerToClientSignifiers.announceWinner + "," + csv[1], gs.playerID2);
             
             //if there is more than one observer, then go through the observer to announce game result
             if (gs.spectatorList.Count > 0)
             { 
                 foreach (int spectator in gs.spectatorList)
                 {
-                    SendMessageToClient(ServerToClientSiginifiers.announceWinnerForSpectator + "," + csv[1], spectator);
+                    SendMessageToClient(ServerToClientSignifiers.announceWinnerForSpectator + "," + csv[1], spectator);
                 }
             }
         }
@@ -273,15 +273,15 @@ public class NetworkedServer : MonoBehaviour
             GameSession gs = FindGameSessionWithPlayerID(id);
             
             //notify both players draw condition
-            SendMessageToClient(ServerToClientSiginifiers.announceDraw + "", gs.playerID1);
-            SendMessageToClient(ServerToClientSiginifiers.announceDraw + "", gs.playerID2);
+            SendMessageToClient(ServerToClientSignifiers.announceDraw + "", gs.playerID1);
+            SendMessageToClient(ServerToClientSignifiers.announceDraw + "", gs.playerID2);
             
             //if there is more than one observer, then go through the observer to announce game result
             if (gs.spectatorList.Count > 0)
             { 
                 foreach (int spectator in gs.spectatorList)
                 {
-                    SendMessageToClient(ServerToClientSiginifiers.announceDrawForSpectator + "", spectator);
+                    SendMessageToClient(ServerToClientSignifiers.announceDrawForSpectator + "", spectator);
                 }
             }
         }
@@ -290,16 +290,16 @@ public class NetworkedServer : MonoBehaviour
             GameSession gs = FindGameSessionWithPlayerID(id);
             
             //notify the client to update chessboard visual
-            SendMessageToClient(ServerToClientSiginifiers.sendReplayChessList + "," + 0, id);
+            SendMessageToClient(ServerToClientSignifiers.sendReplayChessList + "," + DataTransferSignifiers.transferStart, id);
 
             //go through the chess list and send all chess info to client
             foreach (PlayerChess pc in gs.chessList)
             {
-                SendMessageToClient(ServerToClientSiginifiers.sendReplayChessList + "," + 1 + "," + pc.chessPos + "," + pc.chessMark, id);
+                SendMessageToClient(ServerToClientSignifiers.sendReplayChessList + "," + DataTransferSignifiers.transferInProgress + "," + pc.chessPos + "," + pc.chessMark, id);
             }
             
             //notify client that all player moves have been sent 
-            SendMessageToClient(ServerToClientSiginifiers.sendReplayChessList + "," + 2, id);
+            SendMessageToClient(ServerToClientSignifiers.sendReplayChessList + "," + DataTransferSignifiers.transferEnd, id);
         }
         else if (signifier == ClientToServerSignifiers.startNewSession)
         {
@@ -411,7 +411,7 @@ public class NetworkedServer : MonoBehaviour
         public const int startNewSession = 11;
     }
 
-    public static class ServerToClientSiginifiers
+    public static class ServerToClientSignifiers
     {
         public const int LoginResponse = 1;
         public const int GameSessionStarted = 2;
@@ -433,5 +433,12 @@ public class NetworkedServer : MonoBehaviour
         public const int FailureNameInUse = 2;
         public const int FailureNameNotFound = 3;
         public const int FailureIncorrectPassword = 4; 
+    }
+
+    public static class DataTransferSignifiers
+    {
+        public static int transferStart = 0;
+        public static int transferInProgress = 1;
+        public static int transferEnd = 2;
     }
 }

@@ -18,7 +18,10 @@ public class NetworkedServer : MonoBehaviour
 
     private string playerAccountFilePath;
     private int playerWaitingForMatch  = -1;
-    
+
+    private int lastSaveIndex = 0;
+    private string ReplaySaveMetaData = "Replay"; 
+        
     // Start is called before the first frame update
     void Start()
     {
@@ -267,6 +270,8 @@ public class NetworkedServer : MonoBehaviour
                     SendMessageToClient(ServerToClientSignifiers.announceWinnerForSpectator + "," + csv[1], spectator);
                 }
             }
+
+            SaveReplay();
         }
         else if (signifier == ClientToServerSignifiers.isDraw)
         {
@@ -396,6 +401,82 @@ public class NetworkedServer : MonoBehaviour
         }
     }
 
+    public class ReplaySaveData
+    {
+        private int index;
+        private string name;
+        
+        public ReplaySaveData(int index, string name)
+        {
+            this.index = index;
+            this.name = name;
+        }
+        
+        public int Index
+        {
+            get => index;
+            set => index = value;
+        }
+
+        public string Name
+        {
+            get => name;
+            set => name = value;
+        }
+
+        public void SaveReplay(GameSession gs)
+        {
+            StreamWriter sw = new StreamWriter(Application.dataPath + Path.DirectorySeparatorChar + index + ".txt");
+
+            List<string> data = DataManager.SerializeReplayData(gs);
+
+            foreach (string line in data)
+            {
+                sw.WriteLine(line);
+            }
+            
+            sw.Close();
+        }
+
+        public void LoadParty(GameSession gs)
+        {
+            string path = Application.dataPath + Path.DirectorySeparatorChar + index + ".txt";
+
+            if (File.Exists(path))
+            {
+                
+            }
+        }
+    }
+
+    static public class DataManager
+    {
+        static public List<string> SerializeReplayData(GameSession gs)
+        {
+            List<string> data = new List<string>();
+
+            foreach (PlayerChess pc in gs.chessList)
+            {
+                data.Add(pc.chessPos + "," + pc.chessMark);
+            }
+            return data;
+        }
+
+        static public List<PlayerChess> SerializeReplayData(List<string> data)
+        {
+            List<PlayerChess> chessList = new List<PlayerChess>();
+
+            foreach (string line in data)
+            {
+                string[] csv = line.Split(',');
+
+                PlayerChess pc = new PlayerChess( int.Parse(csv[0]), int.Parse(csv[1]));
+            }
+
+            return chessList;
+        }
+    }
+
     public static class ClientToServerSignifiers
     {
         public const int Login = 1;
@@ -407,8 +488,9 @@ public class NetworkedServer : MonoBehaviour
         public const int isDraw = 7;
         public const int sendMessage = 8;
         public const int watchGame = 9;
-        public const int requestReplay = 10;
-        public const int startNewSession = 11;
+        public const int startNewSession = 10;
+        public const int requestReplay = 11;
+        public const int saveReplay = 12;
     }
 
     public static class ServerToClientSignifiers
